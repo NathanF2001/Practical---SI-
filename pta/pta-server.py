@@ -12,8 +12,8 @@ print("Servidor pronto para receber mensagens. Digite Ctrl+C para terminar.")
 
 
 def load_users():
-    cur_path = os.path.dirname(__file__)
-
+    cur_path = os.path.dirname(os.path.realpath(__file__))
+    print(f"Link: {cur_path}")
     file_users = open(f"{cur_path}/pta-server/users.txt", 'r')
     users_string = file_users.read()
     list_users = users_string.split('\n')
