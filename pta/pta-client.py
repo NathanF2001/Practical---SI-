@@ -97,6 +97,7 @@ def test3(sckt):
     while 1:
         data, addr = sckt.recvfrom(2048)
         data = data.decode()
+        print(msg, data)
         if commandUnknow:
             try:
                 commandUnknow = False
@@ -140,7 +141,7 @@ def test3(sckt):
 def test4(sckt, arq, bad):
     global cnt
     msg = str(cnt)+" PEGA "+arq
-    sckt.send(msg.encode())
+    sckt.send(msg.encode("utf-8"))
     cnt += 1
     data1 = ""
     commandUnknow = True

@@ -4,7 +4,8 @@ import os
 serverPort = 11550
 # Cria o Socket TCP (SOCK_STREAM) para rede IPv4 (AF_INET)
 serverSocket = socket(AF_INET, SOCK_STREAM)
-serverSocket.bind(('', serverPort))
+serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+serverSocket.bind(('127.0.0.1', serverPort))
 # Socket fica ouvindo conexoes. O valor 1 indica que uma conexao pode ficar na fila
 serverSocket.listen(1)
 
@@ -13,7 +14,7 @@ print("Servidor pronto para receber mensagens. Digite Ctrl+C para terminar.")
 
 def load_users():
     cur_path = os.path.dirname(os.path.realpath(__file__))
-    print(f"Link: {cur_path}")
+
     file_users = open(f"{cur_path}/pta-server/users.txt", 'r')
     users_string = file_users.read()
     list_users = users_string.split('\n')
@@ -27,14 +28,14 @@ def valid_user(user, list_users):
 
 
 def LIST():
-    cur_path = os.path.dirname(__file__)
+    cur_path = os.path.dirname(os.path.realpath(__file__))
 
     list_files = os.listdir(f"{cur_path}/pta-server/files")
     return list_files
 
 
 def PEGAR(name):
-    cur_path = os.path.dirname(__file__)
+    cur_path = os.path.dirname(os.path.realpath(__file__))
 
     file_users = open(f"{cur_path}/pta-server/files/{name}", 'rb')
     bytes_file = file_users.read()
@@ -54,7 +55,6 @@ while 1:
 
         # Cria um socket para tratar a conexao do cliente
         if not(apresented):
-
             connectionSocket, addr = serverSocket.accept()
 
         msg = connectionSocket.recv(1024).decode()
@@ -81,8 +81,10 @@ while 1:
             if apresented:
                 if command == "list":
                     list_files = LIST()
+
                     returnMsg = Seq_num + " ARQS " + \
                         f"{len(list_files)} " + ",".join(list_files)
+
                 elif command == "pega":
                     bytes_file, size_file = PEGAR(args)
                     returnMsg = f"{Seq_num} ARQ {size_file} {bytes_file}"
@@ -103,10 +105,13 @@ while 1:
         except (ValueError, IndexError, FileNotFoundError):
             returnMsg = f"{Seq_num} NOK"
 
-        connectionSocket.send(returnMsg.encode())
+        connectionSocket.send(returnMsg.encode("utf-8"))
 
         if not(apresented):
             connectionSocket.close()
+
+    except (BrokenPipeError):
+        pass
 
     except (KeyboardInterrupt, SystemExit):
         print("Ctrl+C pressed")
